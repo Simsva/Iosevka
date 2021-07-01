@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+# Extracts available glyphs, their names and code points to stdout (requires manual cleanup)
+# TODO: Add option to toggle glyph fonts
+
+import os
+import fontforge as ff
+
+glyphs_dir = "nerd-fonts-src/glyphs"
+out_file = "glyphs"
+
+glyphs = dict()
+for font_file in os.listdir(glyphs_dir):
+  font_path = os.path.join(glyphs_dir, font_file)
+  font = ff.open(font_path)
+
+  for glyph in font.glyphs():
+    # Remove ".notdef", ".null" and space characters
+    if glyph.glyphname in [".notdef", ".null"] or glyph.encoding in [0x20]:
+      continue
+    output = "{0} {1}; {2};".format(
+        chr(glyph.encoding),
+        glyph.glyphname,
+        hex(glyph.encoding)[2:].upper()
+    )
+    glyphs[glyph.encoding] = output
+    #print(output)
+
+with open(out_file, 'w') as f:
+  for i in sorted(glyphs.keys()):
+    f.write(glyphs[i])
+    f.write('\n')
+
+# vim: ts=2 sw=2 et
